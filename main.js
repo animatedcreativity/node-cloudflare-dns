@@ -118,13 +118,3 @@ exports = module.exports = function(config) {
   };
   return app;
 };
-
-(async function() {
-  var app = new exports({
-    email: "order@5683.me",
-    key: "9901b4a28642a4781973ddcaaef8e5d059ed8"
-  });
-  // var {error, result} = await app.wrapper("result", app.dns.add("ylo.one", {type: "A", name: "test3", content: "149.28.54.63", proxied: true}));
-  // var {error, result} = await app.wrapper("result", app.dns.delete("ylo.one", {type: "A"}));
-  // console.log(error, result);
-})();
