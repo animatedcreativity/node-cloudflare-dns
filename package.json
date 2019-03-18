@@ -7,9 +7,7 @@
     "start": "node main.js"
   },
   "dependencies": {
-    "express": "^4.16.4",
     "cloudflare": "^2.5.1",
-    "node-sanitize-options": "^0.0.6",
     "node-promise-wrapper": "^0.0.1"
   },
   "engines": {
