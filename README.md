@@ -26,6 +26,12 @@ cloudflare.dns.list("domain.com");
 - Lists all DNS records inside a domain.
 
 ```
+cloudflare.dns.record("domain.com", "<subdomain>");
+```
+
+- Gets a DNS record for a subdomain, if there are multiple entries with same name will get the first one.
+
+```
 cloudflare.dns.add("domain.com", {type: "A", name: "test", content: "<ip_address>", proxied: true});
 ```
 
