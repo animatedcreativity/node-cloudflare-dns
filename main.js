@@ -85,11 +85,7 @@ exports = module.exports = function(config) {
           if (typeof zone !== "undefined") {
             var {error, result} = await app.wrapper("result", cf.dnsRecords.add(zone.id, value));
             if (typeof result !== "undefined") {
-              if (typeof result.result !== "undefined" && typeof result.result.success === true) {
-                resolve(result);
-              } else {
-                reject(result);
-              }
+              resolve(result);
             } else {
               reject(error);
             }
