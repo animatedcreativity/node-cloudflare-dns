@@ -57,6 +57,28 @@ exports = module.exports = function(config) {
           }
         });
       },
+      record: function(domain, name) {
+        return new Promise(async function(resolve, reject) {
+          var {error, list} = await app.wrapper("list", app.dns.list(domain));
+          if (typeof list !== "undefined") {
+            var found;
+            for (var i=0; i<=list.length-1; i++) {
+              var item = list[i];
+              if (item.name.toLowerCase() === name.toLowerCase()) {
+                found = item;
+                break;
+              }
+            }
+            if (typeof found !== "undefined") {
+              resolve(found);
+            } else {
+              reject({status: 404, error: "Not found."});
+            }
+          } else {
+            reject(error);
+          }
+        });
+      },
       add: function(domain, value) {
         return new Promise(async function(resolve, reject) {
           var {error, zone} = await app.wrapper("zone", app.zone(domain));
