@@ -2,3 +2,4 @@ public*
 .glitch-assets
 shrinkwrap.yaml
 node-cloudflare-dns*
+.node-cloudflare-dns*
