@@ -1,13 +1,15 @@
 # node-cloudflare-dns
 
-Super simple way to manage Cloudflare DNS entries domainwise. No need to get into the hassle of Zone or DNS IDs.
+Super simple way to manage Cloudflare DNS entries domainwise. No need to get into the hassle of Zone or DNS IDs.  
+Now supports Key-Value namespaces.
 
 **Usage:**
 
 ```
 var cloudflare = require("node-cloudflare-dns")({
   email: "email@domain.com",
-  key: "<cloudflare_api_key>"
+  key: "<cloudflare_api_key>",
+  account: "<account_id>" // can be taken from cloudflare account link, needed for Key-Value namespaces only.
 });
 var record = {type: "A", name: "test", content: "<ip_address>", proxied: true};
 cloudflare.dns.add("domain.com", record);
@@ -55,3 +57,37 @@ cloudflare.zone("domain.com");
 ```
 
 - Get a particular domain's zone.
+
+------------------------------------------
+
+## key-Value Namespaces
+
+```
+cloudflare.kv.namespace.list();
+```
+
+- Get Key-value namespaces list.
+
+```
+cloudflare.kv.namespace.get(namespace);
+```
+
+- Get a Key-value namespace by name.
+
+```
+cloudflare.kv.get(namespace, key);
+```
+
+- Get a key's value from provided namespace.
+
+```
+cloudflare.kv.set(namespace, key, value);
+```
+
+- Set a key's value in provided namespace.
+
+```
+cloudflare.kv.delete(namespace, key);
+```
+
+- Delete a key from provided namespace.

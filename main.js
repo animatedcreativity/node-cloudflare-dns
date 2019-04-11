@@ -1,11 +1,35 @@
 exports = module.exports = function(config) {
   var cloudflare = require("cloudflare");
+  var request = require("request");
+  var fileConfig = require("node-file-config")("node-cloudflare-dns");
+  config = fileConfig.get(config);
   var cf = cloudflare({
     email: config.email,
     key: config.key
   });
   var app = {
     wrapper: require("node-promise-wrapper"),
+    request: function(options) {
+      options.headers = {
+        "X-Auth-Email": config.email,
+        "X-Auth-Key": config.key,
+        "Content-Type": "application/json"
+      };
+      return new Promise(function(resolve, reject) {
+        request(options, function(error, response, body) {
+          if (typeof body !== "undefined") {
+            try {
+              var json = JSON.parse(body);
+              resolve(json);
+            } catch (error) {
+              resolve(body);
+            }
+          } else {
+            reject(error);
+          }
+        });
+      });
+    },
     zone: function(domain) {
       return new Promise(async function(resolve, reject) {
         var {error, zones} = await app.wrapper("zones", app.zones(domain));
@@ -40,6 +64,85 @@ exports = module.exports = function(config) {
           }
         }
       });
+    },
+    kv : {
+      api: "https://api.cloudflare.com/client/v4/accounts/" + config.account,
+      namespace: {
+        list: function() {
+          return new Promise(async function(resolve, reject) {
+            var {error, result} = await app.wrapper("result", app.request({url: app.kv.api + "/storage/kv/namespaces"}));
+            if (typeof result !== "undefined") {
+              resolve(result);
+            } else {
+              reject(result);
+            }
+          });
+        },
+        get: function(namespace) {
+          return new Promise(async function(resolve, reject) {
+            var {error, list} = await app.wrapper("list", app.kv.namespace.list());
+            if (typeof list !== "undefined" && typeof list.result !== "undefined") {
+              var found = false;
+              for (var i=0; i<=list.result.length-1; i++) {
+                var item = list.result[i];
+                if (item.title.toLowerCase() === namespace.toLowerCase()) {
+                  resolve(item);
+                  found = true;
+                  break;
+                }
+              }
+              if (found === false) reject({status: 404, error: "Not found"});
+            } else {
+              reject(error);
+            }
+          });
+        }
+      },
+      get: function(namespace, key) {
+        return new Promise(async function(resolve, reject) {
+          var {error, namespaceObject} = await app.wrapper("namespaceObject", app.kv.namespace.get(namespace));
+          if (typeof namespaceObject !== "undefined") {
+            var {error, result} = await app.wrapper("result", app.request({url: app.kv.api + "/storage/kv/namespaces/" + namespaceObject.id + "/values/" + key}));
+            if (typeof result !== "undefined") {
+              resolve(result);
+            } else {
+              reject(error);
+            }
+          } else {
+            reject(error);
+          }
+        });
+      },
+      delete: function(namespace, key) {
+        return new Promise(async function(resolve, reject) {
+          var {error, namespaceObject} = await app.wrapper("namespaceObject", app.kv.namespace.get(namespace));
+          if (typeof namespaceObject !== "undefined") {
+            var {error, result} = await app.wrapper("result", app.request({url: app.kv.api + "/storage/kv/namespaces/" + namespaceObject.id, method: "DELETE"}));
+            if (typeof result !== "undefined") {
+              resolve(result);
+            } else {
+              reject(error);
+            }
+          } else {
+            reject(error);
+          }
+        });
+      },
+      set: function(namespace, key, value) {
+        return new Promise(async function(resolve, reject) {
+          var {error, namespaceObject} = await app.wrapper("namespaceObject", app.kv.namespace.get(namespace));
+          if (typeof namespaceObject !== "undefined") {
+            var {error, result} = await app.wrapper("result", app.request({url: app.kv.api + "/storage/kv/namespaces/" + namespaceObject.id + "/values/" + key, method: "PUT", body: value}));
+            if (typeof result !== "undefined") {
+              resolve(result);
+            } else {
+              reject(error);
+            }
+          } else {
+            reject(error);
+          }
+        });
+      }
     },
     dns: {
       list: function(domain) {
